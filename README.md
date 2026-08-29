@@ -16,5 +16,5 @@ C++ · 标准库（fstream, sstream, filesystem, ctime）
 
 ## 快速开始
 ```bash
-g++ -std=c++17 main.cpp -o hotel_analyzer
+g++ -std=c++17 hotel_analyzer.cpp -o hotel_analyzer
 ./hotel_analyzer
