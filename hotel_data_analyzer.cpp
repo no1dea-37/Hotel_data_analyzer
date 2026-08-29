@@ -341,33 +341,65 @@ string file_name;
    {
       file_name=return_name;
    }
-
-
-   cout<<"请输入想查询的日期！(默认今日)"<<endl;
-   cout<<"请输入>>";
-   getline(cin,checking_date);
-   cout<<checking_date<<endl;
-   cout<<"请输入目标repar!"<<endl;
-   cout<<"请输入>>";//可修改成缓存模式，
-   getline(cin,target_repar_str);
-   cout<<endl;
-   cout<<"请确认/输入房间总量!"<<endl;
-   cout<<"请确认--数量为:115(若数字一致可不填并回车,若不同请输入)"<<endl<<"请输入>>";
-   getline(cin, room_num_str);
-   cout<<endl;
-
-
-   double target_repar=safe_stod(target_repar_str);
+   ifstream data_file("loading_repar.txt");
+   string last_repar;
+   if (!data_file.is_open())
+   {
+      ofstream outfile("loading_repar.txt");
+      cout<<"请输入想查询的日期！(默认今日)"<<endl;
+      cout<<"请输入>>";
+      getline(cin,checking_date);
+      cout<<checking_date<<endl;
+      cout<<"请输入目标repar!"<<endl;
+      cout<<"请输入>>";//可修改成缓存模式，
+      getline(cin,target_repar_str);
+      cout<<endl;
+      cout<<"请确认/输入房间总量!"<<endl;
+      cout<<"请确认--数量为:115(若数字一致可不填并回车,若不同请输入)"<<endl<<"请输入>>";
+      getline(cin, room_num_str);
+      cout<<endl;
+      outfile<<target_repar_str<<endl;
+      data_file.close();
+   }
+   else
+   {
+      getline(data_file,last_repar);
+      cout<<"请输入想查询的日期！(默认今日)"<<endl;
+      cout<<"请输入>>";
+      getline(cin,checking_date);
+      cout<<checking_date<<endl;
+      cout<<"请输入目标repar!"<<"上次为"<<last_repar<<"(若目标一致可不填并回车,若不同请输入)"<<endl;
+      cout<<"请输入>>";//可修改成缓存模式，
+      getline(cin,target_repar_str);
+      cout<<endl;
+      cout<<"请确认/输入房间总量!"<<endl;
+      cout<<"请确认--数量为:115(若数字一致可不填并回车,若不同请输入)"<<endl<<"请输入>>";
+      getline(cin, room_num_str);
+      cout<<endl;
+      data_file.close();
+      ofstream outfile("loading_repar.txt");
+      if(safe_stod(target_repar_str)==0.0)
+      {
+         outfile<<last_repar<<endl;
+      }
+      else outfile<<target_repar_str<<endl;
+      outfile<<target_repar_str<<endl;
+      outfile.close();
+   }
+   double target_repar=safe_stod(last_repar);
    int room_num=115;
    if(safe_stoi(room_num_str)!=0)
    {
       room_num=safe_stoi(room_num_str);
    }
+   if(safe_stod(target_repar_str)!=0)
+   {
+      target_repar=safe_stod(target_repar_str);
+   }
 
 
 //   if(argc>1)
    ifstream file(file_name);
-    // ... 你的后续代码
    if(!file.is_open())
    {
        cerr << "Error opening file!"<<file_name << endl;
