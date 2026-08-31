@@ -1,5 +1,6 @@
 # Hotel_data_analyzer
-A tool whose function is analyzing CSV document to get precise information summary;/n
+A tool whose function is analyzing CSV document to get precise information summary;
+
 注：文件代码与表格已做脱敏处理，企业名称，人名电话等已手动屏蔽
 # 酒店收益管理数据分析工具
 
