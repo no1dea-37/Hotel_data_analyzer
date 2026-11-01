@@ -1,0 +1,32 @@
+{
+  "name": "hotel-pricing-dashboard",
+  "version": "1.0.0",
+  "description": "酒店房价分析台 Windows 桌面应用",
+  "main": "main.cjs",
+  "author": "Hotel Pricing Dashboard",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "^37.2.6",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "local.hotel.pricing.dashboard",
+    "productName": "酒店房价分析台",
+    "directories": { "output": "dist" },
+    "files": ["main.cjs", "hotel-pricing-dashboard.html", "package.json"],
+    "win": {
+      "target": ["nsis"],
+      "artifactName": "${productName}-Setup-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

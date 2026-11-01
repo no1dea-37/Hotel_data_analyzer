@@ -1,22 +1,19 @@
-# Hotel_data_analyzer
-A tool whose function is analyzing CSV document to get precise information summary;
+# 酒店房价分析台（Windows 桌面版）
 
-注：文件代码与表格已做脱敏处理，企业名称，人名电话等已手动屏蔽
-# 酒店收益管理数据分析工具
+此项目把酒店房价分析页面封装为 Electron 桌面窗口。CSV 文件仍在本机浏览器视图内处理。
 
-一个用于处理酒店订单CSV数据的C++命令行工具，支持脏数据清洗、多日期格式识别、RePar计算与动态调价建议。
+## 没有 Windows 电脑时：用 GitHub 云端生成安装包
 
-## 技术栈
-C++ · 标准库（fstream, sstream, filesystem, ctime）
+项目包含 `.github/workflows/build-windows.yml`，由 GitHub 的 Windows 云端运行器构建安装程序。
 
-## 核心功能
-- 流式解析大体积CSV，支持字段内嵌逗号与跨行拼接
-- 封装安全类型转换函数（safe_stoi / safe_stod），处理空字段与异常输入
-- 支持多种日期输入格式，自动计算在住天数
-- 从备注字段提取每日房价，区分直连与私联房价
-- 输出RePar、实时营业额与动态调价建议
+1. 在 GitHub 创建一个仓库；若源码不想公开，请设为 **Private**。
+2. 将解压后的整个项目上传到仓库，确保 `.github/workflows/build-windows.yml` 也上传。
+3. 上传到 `main` 分支后，打开仓库的 **Actions** 页面，选择 **Build Windows Installer** 并运行。
+4. 等工作流完成，在运行详情页的 **Artifacts** 区下载 `hotel-pricing-windows-installer`。
+5. 解压下载的 artifact，即可取到安装程序 `.exe`，再把它发给要安装的人。
 
-## 快速开始
-```bash
-g++ -std=c++17 hotel_analyzer.cpp -o hotel_analyzer
-./hotel_analyzer
+构建出来的安装程序面向 x64 Windows。收到安装程序的人无需安装 Node.js。
+
+## 在 Windows 电脑本机打包
+
+安装 Node.js LTS 后，双击 `build-windows.bat`；安装程序会生成在 `dist` 文件夹中。
