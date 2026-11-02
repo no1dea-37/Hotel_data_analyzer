@@ -1,6 +1,6 @@
 {
   "name": "hotel-pricing-dashboard",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "酒店房价分析台 Windows 桌面应用",
   "main": "main.cjs",
   "author": "Hotel Pricing Dashboard",
@@ -16,10 +16,18 @@
   "build": {
     "appId": "local.hotel.pricing.dashboard",
     "productName": "酒店房价分析台",
-    "directories": { "output": "dist" },
-    "files": ["main.cjs", "hotel-pricing-dashboard.html", "package.json"],
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "hotel-pricing-dashboard.html",
+      "package.json"
+    ],
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "artifactName": "${productName}-Setup-${version}-${arch}.${ext}"
     },
     "nsis": {
