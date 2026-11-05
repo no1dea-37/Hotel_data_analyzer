@@ -7,6 +7,7 @@
 #include <ctime>
 #include <cctype>
 #include <cmath>
+#include <cstdlib>
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h> 
 #endif
@@ -63,23 +64,30 @@ string get_current_time_str() {
 }
 
    // 安全转换函数 有转化错误格式就变成0.0/0；
+
+   // 安全转换函数 有转化错误格式就变成0.0/0；
  int safe_stoi(const string& s) {
     string t = s;
     // 去除首尾空格
     t.erase(0, t.find_first_not_of(" \t\n\r"));
     t.erase(t.find_last_not_of(" \t\n\r") + 1);
     if (t.empty() || t == "-") return 0;
-    try { return stoi(t); }
-    catch (...) { return 0; }
+   char* end;
+      long val=strtol(t.c_str(), &end,10);
+      if(end==t.c_str()||*end!='\0') return 0; //过滤掉"abc",".","--""
+      return val;
 }
 
- double safe_stod(const string& s) {
+double safe_stod(const string& s) {
     string t = s;
     t.erase(0, t.find_first_not_of(" \t\n\r"));
     t.erase(t.find_last_not_of(" \t\n\r") + 1);
     if (t.empty() || t == "-") return 0.0;
-    try { return stod(t); }
-    catch (...) { return 0.0; }
+
+    char* end;
+    double val = strtod(t.c_str(), &end);
+    if (end == t.c_str() || *end != '\0') return 0.0; // 过滤掉 "abc", ".", "--"
+    return val;
 }
 
  int days_since_checkin(const string& checkin_date, const string& checking_date) 
@@ -229,6 +237,8 @@ string get_current_time_str() {
    int days_diff = seconds_diff / (60 * 60 * 24);
    return days_diff;
 }
+
+
 double target_repar = 0.0;
 
 vector<double> get_real_price(const string& remark)
@@ -264,6 +274,7 @@ vector<double> get_real_price(const string& remark)
       while (end < remark.size() && (isdigit(remark[end]) || remark[end] == '.')) {
          end++;
       }
+      size_t price_end = end; // 数字部分结束位置（*n 之前）
 
         // 检查是否有 *n 重复标记
         int repeat = 1;
@@ -285,7 +296,7 @@ vector<double> get_real_price(const string& remark)
         //  提取价格并存入向量
         if (start < end)
         {
-            string price_str = remark.substr(start, end - start);
+            string price_str = remark.substr(start, price_end - start);
             double price_val = safe_stod(price_str);
             for (int i = 0; i < repeat; i++)
                 day_price.push_back(price_val);
@@ -301,10 +312,120 @@ vector<double> get_real_price(const string& remark)
       cout<<day_price.size()<<"个";
     return day_price;
 }
+
 string checking_date;
 string target_repar_str;
 string room_num_str;
 string file_name;
+
+hotel deal_message_collection(const string& l)
+{
+   hotel deal_hotel;
+   stringstream ss(l);
+      string num_i;// 房号
+      string variety_i;//种类
+      string n_num1_i;  //all of n_num{1,2,3,...}are useless
+      string name_i;//名字
+      string state_i;//状态
+      string ept_i;//空字符
+      string opt_i;//有可能会有的编码
+      string n_num2_i;
+      string n_num3_i;
+      string time_i;//次数，一般是0
+      string quantity_i;//人数
+      string c_time_i;//入住时间
+      string l_time_i;//离开时间
+      string code_i;//房价码
+      string price_i;//房价
+      string price2_i;//包价
+      string own_i;//余额
+      string credit_i;//信用，一般是0.00
+      string kind_i;//团体，用于区分直连私联；
+      string remark_i;//备注
+      string n_num4_i;//手机号
+      string account_i;//账号
+      // Read each field from the CSV line all of them are strings so define them all in string mode
+      
+      getline(ss, num_i, ',');
+      getline(ss, variety_i, ',');
+      getline(ss, n_num1_i, ',');
+      getline(ss, name_i, ',');
+      getline(ss, state_i, ',');
+      getline(ss, ept_i, ',');
+      getline(ss, opt_i, ',');
+      getline(ss, n_num2_i, ',');
+      getline(ss, n_num3_i, ',');
+      getline(ss, time_i, ',');
+      getline(ss, quantity_i, ',');
+      getline(ss, c_time_i, ',');
+      getline(ss, l_time_i, ',');
+      getline(ss, code_i, ',');
+      getline(ss, price_i, ',');
+      getline(ss, price2_i, ',');
+      getline(ss, own_i, ',');
+      getline(ss, credit_i, ',');
+      getline(ss, kind_i, ',');
+
+      string remaining;
+      getline(ss, remaining);
+
+      // 清理末尾的 \r 和 \n
+      if (!remaining.empty() && (remaining.back() == '\r' || remaining.back() == '\n')) {
+         remaining.pop_back();
+      }
+
+      // 处理空字符串情况
+      if (remaining.empty()) {
+         remark_i = "";
+         n_num4_i = "";
+         account_i = "";
+      } else {
+         size_t last_comma = remaining.rfind(',');
+         if (last_comma == string::npos) {
+            remark_i = remaining;
+            n_num4_i = "";
+            account_i = "";
+         } else {
+            account_i = remaining.substr(last_comma + 1);
+            string temp = remaining.substr(0, last_comma);
+            size_t second_last_comma = temp.rfind(',');
+            if (second_last_comma == string::npos) {
+                  remark_i = temp;
+                  n_num4_i = account_i;
+                  account_i = "";
+            } else {
+                  n_num4_i = temp.substr(second_last_comma + 1);
+                  remark_i = temp.substr(0, second_last_comma);
+            }
+         }
+      }
+      
+      int num=safe_stoi(num_i);
+      string variety=variety_i;
+      int n_num1=safe_stoi(n_num1_i);  
+      string name=name_i;
+      char state = state_i.empty() ? ' ' : state_i[0];
+      string ept=ept_i;
+      string opt=opt_i;
+      int n_num2=safe_stoi(n_num2_i);
+      int n_num3=safe_stoi(n_num3_i);
+      string time=time_i;
+      int quantity=safe_stoi(quantity_i);
+      string c_time=c_time_i;
+      string l_time=l_time_i;
+      string code=code_i;
+      double price=safe_stod(price_i);
+      string price2=price2_i;
+      double own=safe_stod(own_i);
+      double credit=safe_stod(credit_i);
+      string kind=kind_i;
+      string remark=remark_i;
+      string n_num4=n_num4_i;
+      string account=account_i;
+       deal_hotel={num,variety,n_num1,name,state,ept,opt,n_num2,n_num3,time,quantity,c_time,l_time,code,price,price2,own,credit,kind,remark,n_num4,account};
+      return deal_hotel;
+}
+
  int main(int argc,char* argv[])
  {
    #if defined(_WIN32) || defined(_WIN64)
@@ -341,65 +462,33 @@ string file_name;
    {
       file_name=return_name;
    }
-   ifstream data_file("loading_repar.txt");
-   string last_repar;
-   if (!data_file.is_open())
-   {
-      ofstream outfile("loading_repar.txt");
-      cout<<"请输入想查询的日期！(默认今日)"<<endl;
-      cout<<"请输入>>";
-      getline(cin,checking_date);
-      cout<<checking_date<<endl;
-      cout<<"请输入目标repar!"<<endl;
-      cout<<"请输入>>";//可修改成缓存模式，
-      getline(cin,target_repar_str);
-      cout<<endl;
-      cout<<"请确认/输入房间总量!"<<endl;
-      cout<<"请确认--数量为:115(若数字一致可不填并回车,若不同请输入)"<<endl<<"请输入>>";
-      getline(cin, room_num_str);
-      cout<<endl;
-      outfile<<target_repar_str<<endl;
-      data_file.close();
-   }
-   else
-   {
-      getline(data_file,last_repar);
-      cout<<"请输入想查询的日期！(默认今日)"<<endl;
-      cout<<"请输入>>";
-      getline(cin,checking_date);
-      cout<<checking_date<<endl;
-      cout<<"请输入目标repar!"<<"上次为"<<last_repar<<"(若目标一致可不填并回车,若不同请输入)"<<endl;
-      cout<<"请输入>>";//可修改成缓存模式，
-      getline(cin,target_repar_str);
-      cout<<endl;
-      cout<<"请确认/输入房间总量!"<<endl;
-      cout<<"请确认--数量为:115(若数字一致可不填并回车,若不同请输入)"<<endl<<"请输入>>";
-      getline(cin, room_num_str);
-      cout<<endl;
-      data_file.close();
-      ofstream outfile("loading_repar.txt");
-      if(safe_stod(target_repar_str)==0.0)
-      {
-         outfile<<last_repar<<endl;
-      }
-      else outfile<<target_repar_str<<endl;
-      outfile<<target_repar_str<<endl;
-      outfile.close();
-   }
-   double target_repar=safe_stod(last_repar);
+
+
+   cout<<"请输入想查询的日期！(默认今日)"<<endl;
+   cout<<"请输入>>";
+   getline(cin,checking_date);
+   cout<<checking_date<<endl;
+   cout<<"请输入目标repar!"<<endl;
+   cout<<"请输入>>";//可修改成缓存模式，
+   getline(cin,target_repar_str);
+   cout<<endl;
+   cout<<"请确认/输入房间总量!"<<endl;
+   cout<<"请确认--数量为:115(若数字一致可不填并回车,若不同请输入)"<<endl<<"请输入>>";
+   getline(cin, room_num_str);
+   cout<<endl;
+
+
+   double target_repar=safe_stod(target_repar_str);
    int room_num=115;
    if(safe_stoi(room_num_str)!=0)
    {
       room_num=safe_stoi(room_num_str);
    }
-   if(safe_stod(target_repar_str)!=0)
-   {
-      target_repar=safe_stod(target_repar_str);
-   }
 
 
 //   if(argc>1)
    ifstream file(file_name);
+    // ... 你的后续代码
    if(!file.is_open())
    {
        cerr << "Error opening file!"<<file_name << endl;
@@ -415,7 +504,6 @@ string file_name;
    int l=0;
    while (getline(file, line))
    {
-      //cout << "开始处理新行: [" << line << "]" << endl;
      if(full_line.empty())
      {
        full_line = line; // First line, no need to add a newline
@@ -432,246 +520,23 @@ string file_name;
       }
       if(d_count<18)
       {
-               full_line += line;
-               
+         full_line += line; 
       }
       if(d_count >=18)
       {
          cout<<full_line<<endl<<endl;
-      stringstream ss(full_line);
-      string num_i;// 房号
-      string variety_i;//种类
-      string n_num1_i;  //all of n_num{1,2,3,...}are useless
-      string name_i;//名字
-      string state_i;//状态
-      string ept_i;//空字符
-      string opt_i;//有可能会有的编码
-      string n_num2_i;
-      string n_num3_i;
-      string time_i;//次数，一般是0
-      string quantity_i;//人数
-      string c_time_i;//入住时间
-      string l_time_i;//离开时间
-      string code_i;//房价码
-      string price_i;//房价
-      string price2_i;//包价
-      string own_i;//余额
-      string credit_i;//信用，一般是0.00
-      string kind_i;//团体，用于区分直连私联；
-      string remark_i;//备注
-      string n_num4_i;//手机号
-      string account_i;//账号
-      // Read each field from the CSV line all of them are strings so define them all in string mode
-      
-      getline(ss, num_i, ',');
-      getline(ss, variety_i, ',');
-      getline(ss, n_num1_i, ',');
-      getline(ss, name_i, ',');
-      getline(ss, state_i, ',');
-      getline(ss, ept_i, ',');
-      getline(ss, opt_i, ',');
-      getline(ss, n_num2_i, ',');
-      getline(ss, n_num3_i, ',');
-      getline(ss, time_i, ',');
-      getline(ss, quantity_i, ',');
-      getline(ss, c_time_i, ',');
-      getline(ss, l_time_i, ',');
-      getline(ss, code_i, ',');
-      getline(ss, price_i, ',');
-      getline(ss, price2_i, ',');
-      getline(ss, own_i, ',');
-      getline(ss, credit_i, ',');
-      getline(ss, kind_i, ',');
-      //getline(ss, remark_i, ','); 后三项单独查找
-      //getline(ss, n_num4_i, ',');
-      //getline(ss, account_i, ',');
-      //separate the stringstream into dif virables
-
-      string remaining;
-      getline(ss, remaining);
-
-      // 清理末尾的 \r 和 \n
-      if (!remaining.empty() && (remaining.back() == '\r' || remaining.back() == '\n')) {
-         remaining.pop_back();
-      }
-
-      // 处理空字符串情况
-      if (remaining.empty()) {
-         remark_i = "";
-         n_num4_i = "";
-         account_i = "";
-      } else {
-         size_t last_comma = remaining.rfind(',');
-         if (last_comma == string::npos) {
-            remark_i = remaining;
-            n_num4_i = "";
-            account_i = "";
-         } else {
-            account_i = remaining.substr(last_comma + 1);
-            string temp = remaining.substr(0, last_comma);
-            size_t second_last_comma = temp.rfind(',');
-            if (second_last_comma == string::npos) {
-                  remark_i = temp;
-                  n_num4_i = account_i;
-                  account_i = "";
-            } else {
-                  n_num4_i = temp.substr(second_last_comma + 1);
-                  remark_i = temp.substr(0, second_last_comma);
-            }
-         }
-      }
-      
-      int num=safe_stoi(num_i);
-      string variety=variety_i;
-      int n_num1=safe_stoi(n_num1_i);  
-      string name=name_i;
-      char state=state_i[0];
-      string ept=ept_i;
-      string opt=opt_i;
-      int n_num2=safe_stoi(n_num2_i);
-      int n_num3=safe_stoi(n_num3_i);
-      string time=time_i;
-      int quantity=safe_stoi(quantity_i);
-      string c_time=c_time_i;
-      string l_time=l_time_i;
-      string code=code_i;
-      double price=safe_stod(price_i);
-      string price2=price2_i;
-      double own=safe_stod(own_i);
-      double credit=safe_stod(credit_i);
-      string kind=kind_i;
-      string remark=remark_i;
-      string n_num4=n_num4_i;
-      string account=account_i;
-      hotel o={num,variety,n_num1,name,state,ept,opt,n_num2,n_num3,time,quantity,c_time,l_time,code,price,price2,own,credit,kind,remark,n_num4,account};
-      
-      h.push_back(o);
+      h.push_back(deal_message_collection(full_line));
       //input finish
          full_line.clear();
          full_line=line; // Clear the full_line for the next record
-      //cout << "成功读取一行数据: " << num << ", " << name << endl;
       }
-      //cout<<"读取完成，共读取 "<<h.size()<<" 条记录."<<endl;
-      //cin.ignore();
-      //cin.get();
-      //#if defined(_WIN32) || defined(_WIN64)
-      //system("pause");
-      //#endif
       }
    }   
-   full_line+=line;
-   stringstream ss(full_line);
-      string num_i;// 房号
-      string variety_i;//种类
-      string n_num1_i;  //all of n_num{1,2,3,...}are useless
-      string name_i;//名字
-      string state_i;//状态
-      string ept_i;//空字符
-      string opt_i;//有可能会有的编码
-      string n_num2_i;
-      string n_num3_i;
-      string time_i;//次数，一般是0
-      string quantity_i;//人数
-      string c_time_i;//入住时间
-      string l_time_i;//离开时间
-      string code_i;//房价码
-      string price_i;//房价
-      string price2_i;//包价
-      string own_i;//余额
-      string credit_i;//信用，一般是0.00
-      string kind_i;//团体，用于区分直连私联；
-      string remark_i;//备注
-      string n_num4_i;//手机号
-      string account_i;//账号
-      // Read each field from the CSV line all of them are strings so define them all in string mode
-      
-      getline(ss, num_i, ',');
-      getline(ss, variety_i, ',');
-      getline(ss, n_num1_i, ',');
-      getline(ss, name_i, ',');
-      getline(ss, state_i, ',');
-      getline(ss, ept_i, ',');
-      getline(ss, opt_i, ',');
-      getline(ss, n_num2_i, ',');
-      getline(ss, n_num3_i, ',');
-      getline(ss, time_i, ',');
-      getline(ss, quantity_i, ',');
-      getline(ss, c_time_i, ',');
-      getline(ss, l_time_i, ',');
-      getline(ss, code_i, ',');
-      getline(ss, price_i, ',');
-      getline(ss, price2_i, ',');
-      getline(ss, own_i, ',');
-      getline(ss, credit_i, ',');
-      getline(ss, kind_i, ',');
-      //getline(ss, remark_i, ','); 后三项单独查找
-      //getline(ss, n_num4_i, ',');
-      //getline(ss, account_i, ',');
-      //separate the stringstream into dif virables
-
-      string remaining;
-      getline(ss, remaining);
-
-      // 清理末尾的 \r 和 \n
-      if (!remaining.empty() && (remaining.back() == '\r' || remaining.back() == '\n')) {
-         remaining.pop_back();
-      }
-
-      // 处理空字符串情况
-      if (remaining.empty()) {
-         remark_i = "";
-         n_num4_i = "";
-         account_i = "";
-      } else {
-         size_t last_comma = remaining.rfind(',');
-         if (last_comma == string::npos) {
-            remark_i = remaining;
-            n_num4_i = "";
-            account_i = "";
-         } else {
-            account_i = remaining.substr(last_comma + 1);
-            string temp = remaining.substr(0, last_comma);
-            size_t second_last_comma = temp.rfind(',');
-            if (second_last_comma == string::npos) {
-                  remark_i = temp;
-                  n_num4_i = account_i;
-                  account_i = "";
-            } else {
-                  n_num4_i = temp.substr(second_last_comma + 1);
-                  remark_i = temp.substr(0, second_last_comma);
-            }
-         }
-      }
-      
-      int num=safe_stoi(num_i);
-      string variety=variety_i;
-      int n_num1=safe_stoi(n_num1_i);  
-      string name=name_i;
-      char state=state_i[0];
-      string ept=ept_i;
-      string opt=opt_i;
-      int n_num2=safe_stoi(n_num2_i);
-      int n_num3=safe_stoi(n_num3_i);
-      string time=time_i;
-      int quantity=safe_stoi(quantity_i);
-      string c_time=c_time_i;
-      string l_time=l_time_i;
-      string code=code_i;
-      double price=safe_stod(price_i);
-      string price2=price2_i;
-      double own=safe_stod(own_i);
-      double credit=safe_stod(credit_i);
-      string kind=kind_i;
-      string remark=remark_i;
-      string n_num4=n_num4_i;
-      string account=account_i;
-      hotel o={num,variety,n_num1,name,state,ept,opt,n_num2,n_num3,time,quantity,c_time,l_time,code,price,price2,own,credit,kind,remark,n_num4,account};
-      
-      h.push_back(o);
+      h.push_back(deal_message_collection(full_line));
       //input finish
    file.close();
    //读取数据完成；
-   //h是所有数据，c是私联的数据
+   //h是所有数据，c是标记爱兰德私联的数据
    for(const auto& record : h) 
    {
       if(record.kind=="//Company_name")
@@ -744,9 +609,15 @@ string file_name;
    int room_left=room_num-room.size();
    double money=0.0;
    money=target_repar*room_num-count;
-   double result=ceil(money/room_left);
+   if(room_left<=0)
+   {
+      cout<<"房间已满，无法调价"<<endl;
+      return 0;
+   }
+   else{
+      double result=ceil(money/room_left);
    cout<<room_num<<endl;
-   cout<<"改为"<<result<<"均价";
+   cout<<"涨"<<result<<"均价";
    cout<<endl<<file_name;
   string result_filename = "result_" + get_current_time_str() + ".txt";
    ofstream outfile(result_filename);
@@ -766,7 +637,7 @@ string file_name;
    cout << "数据捕捉修正后营业额为" << human_count_p << endl;
    outfile << "数据捕捉修正后营业额为" << human_count_p << endl;
 
-   // 其他你想保存的信息（房间数、涨价值等）
+   // 其他信息
    cout << "剩余房间数：" << room_left << endl;
    outfile << "剩余房间数：" << room_left << endl;
 
@@ -775,5 +646,5 @@ string file_name;
 
 
 
-return 0;
+return 0;}
 }
