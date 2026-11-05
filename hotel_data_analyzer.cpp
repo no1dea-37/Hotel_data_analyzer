@@ -555,14 +555,14 @@ hotel deal_message_collection(const string& l)
    for(const auto& record : h) //总房价加和
    {
       day=days_since_checkin(record.c_time,checking_date);
-      if(day<days_since_checkin(record.c_time,record.l_time)) mach_count+=record.price;
+      if(day>=0 && day<days_since_checkin(record.c_time,record.l_time)) mach_count+=record.price;
 
       
    }
    for(const auto& record : c) //私联房价加和
    {
       day=days_since_checkin(record.c_time,checking_date);
-      if(day<days_since_checkin(record.c_time,record.l_time))
+      if(day>=0 && day<days_since_checkin(record.c_time,record.l_time))
       {
          mach_count_p+=record.price;
          vector<double> day_price;//每天不同房价
@@ -591,7 +591,7 @@ hotel deal_message_collection(const string& l)
       for (const auto& record : h)
        {
          day=days_since_checkin(record.c_time,checking_date);
-         if(day<days_since_checkin(record.c_time,record.l_time))
+         if(day>=0 && day<days_since_checkin(record.c_time,record.l_time))
          {
          bool exists = false;
          for (size_t i = 0; i < room.size(); ++i) 
