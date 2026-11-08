@@ -28,7 +28,7 @@
       "target": [
         "nsis"
       ],
-      "artifactName": "${productName}-Setup-${version}-${arch}.${ext}"
+      "artifactName": "HotelPricingDashboard-Setup-${version}-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,

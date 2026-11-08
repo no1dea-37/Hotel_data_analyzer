@@ -4,7 +4,7 @@
 
 ## 下载和安装
 
-前往 [Releases 下载最新版本](https://github.com/no1dea-37/Hotel_data_analyzer/releases/latest)，下载 `酒店房价分析台-Setup-1.0.2-x64.exe` 安装程序（适用于 Windows 64 位），然后双击运行安装。
+前往 [Releases 下载最新版本](https://github.com/no1dea-37/Hotel_data_analyzer/releases/latest)，下载 `HotelPricingDashboard-Setup-1.0.2-x64.exe` 安装程序（适用于 Windows 64 位），然后双击运行安装。
 
 安装时不需要 Node.js。当前安装包未签名，Windows 可能显示“未知发布者”提示。
 
