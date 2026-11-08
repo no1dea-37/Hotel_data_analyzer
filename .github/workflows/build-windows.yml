@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -22,6 +22,15 @@ jobs:
         run: npm install
       - name: Build Windows installer
         run: npm run dist:win -- --publish never
+      - name: Verify packaged app
+        shell: bash
+        run: |
+          npx --yes @electron/asar extract dist/win-unpacked/resources/app.asar asar_out
+          echo "APP_VERSION=$(node -p "require('./asar_out/package.json').version")" | tee verify.txt
+          grep -q "房间已满" asar_out/hotel-pricing-dashboard.html && echo "FULL_ROOM_MSG=ok" | tee -a verify.txt || echo "FULL_ROOM_MSG=missing" | tee -a verify.txt
+          grep -q "Company_name" asar_out/hotel-pricing-dashboard.html && echo "PRIVATE_KIND=placeholder" | tee -a verify.txt || echo "PRIVATE_KIND=real_name" | tee -a verify.txt
+          ls -l dist/*.exe | tee -a verify.txt
+          sha256sum dist/*.exe | tee -a verify.txt
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
@@ -29,3 +38,17 @@ jobs:
           path: dist/*.exe
           if-no-files-found: error
           retention-days: 14
+      - name: Upload build info
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-info
+          path: verify.txt
+          retention-days: 14
+      - name: Publish release
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          gh release create "v$VERSION" dist/*.exe --title "v$VERSION" --notes "自动构建 v$VERSION" || gh release upload "v$VERSION" dist/*.exe --clobber
