@@ -1,7 +1,7 @@
 {
   "name": "hotel-pricing-dashboard",
-  "version": "1.0.2",
-  "description": "酒店房价分析台 Windows 桌面应用",
+  "version": "1.1.0",
+  "description": "酒店房价分析台 Windows 桌面应用（入住明细 + 本日将到列表）",
   "main": "main.cjs",
   "author": "Hotel Pricing Dashboard",
   "license": "UNLICENSED",
@@ -22,6 +22,7 @@
     "files": [
       "main.cjs",
       "hotel-pricing-dashboard.html",
+      "xlsx.full.min.js",
       "package.json"
     ],
     "win": {

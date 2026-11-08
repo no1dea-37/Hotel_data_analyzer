@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8">
+<iframe id="f" src="../hotel-pricing-dashboard.html" style="width:1500px;height:1300px"></iframe>
+<pre id="out"></pre>
+<script>
+const f=document.getElementById('f');
+f.onload=async()=>{
+  const d=f.contentDocument;
+  d.getElementById('dateInput').value='2026-07-28';
+  d.getElementById('dateInput').dispatchEvent(new Event('change',{bubbles:true}));
+  const buf=await (await fetch('./fixtures/arrivals.xls')).arrayBuffer();
+  const dt=new DataTransfer();dt.items.add(new File([buf],'arrivals.xls'));
+  const inp=d.getElementById('arrivalsInput');inp.files=dt.files;
+  inp.dispatchEvent(new Event('change',{bubbles:true}));
+  setTimeout(()=>{
+    const rows=[...d.querySelectorAll('#arrivalRows tr')];
+    const sub=d.getElementById('arrivalsSubtitle').textContent;
+    const first=rows[0]?rows[0].innerText.replace(/\s+/g,' | '):'none';
+    const ok=rows.length===3&&/张三/.test(first)&&sub.includes('预抵 3 间');
+    const res=(ok?'PASS':'FAIL')+' ROWS='+rows.length+' SUB='+sub+' FIRST='+first;
+    document.title=res;document.getElementById('out').textContent=res;
+  },2500);
+};
+</script>

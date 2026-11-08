@@ -1,0 +1,29 @@
+<!doctype html><meta charset="utf-8">
+<iframe id="f" src="../hotel-pricing-dashboard.html" style="width:1500px;height:1300px"></iframe>
+<script>
+const f=document.getElementById('f');
+f.onload=async()=>{
+  const w=f.contentWindow,d=f.contentDocument;
+  d.getElementById('dateInput').value='2026-07-28';
+  d.getElementById('dateInput').dispatchEvent(new Event('change',{bubbles:true}));
+  let info='';
+  try{
+    info+='XLSX='+(typeof w.XLSX)+';';
+    const buf=await (await fetch('../arrivals_sample.xls')).arrayBuffer();
+    const wb=w.XLSX.read(buf,{type:'array'});
+    const sh=wb.Sheets[wb.SheetNames[0]];
+    const rows=w.XLSX.utils.sheet_to_json(sh,{header:1,defval:'',raw:true});
+    info+='rows='+rows.length+';';
+    const arr=w.normalizeArrivals(rows);
+    info+='arr='+arr.length+';';
+    if(arr.length)info+='first='+JSON.stringify(arr[0])+';';
+    const dt=new DataTransfer();dt.items.add(new File([buf],'x.xls'));
+    const inp=d.getElementById('arrivalsInput');inp.files=dt.files;
+    inp.dispatchEvent(new Event('change',{bubbles:true}));
+    await new Promise(r=>setTimeout(r,1200));
+    info+='toast='+d.getElementById('toast').textContent+';';
+    info+='sub='+d.getElementById('arrivalsSubtitle').textContent+';';
+  }catch(e){info+='ERR='+e.message}
+  document.title=info;document.body.setAttribute('data-result',info);
+};
+</script>
