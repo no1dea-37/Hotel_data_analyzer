@@ -29,6 +29,8 @@ jobs:
           echo "APP_VERSION=$(node -p "require('./asar_out/package.json').version")" | tee verify.txt
           grep -q "房间已满" asar_out/hotel-pricing-dashboard.html && echo "FULL_ROOM_MSG=ok" | tee -a verify.txt || echo "FULL_ROOM_MSG=missing" | tee -a verify.txt
           grep -q "Company_name" asar_out/hotel-pricing-dashboard.html && echo "PRIVATE_KIND=placeholder" | tee -a verify.txt || echo "PRIVATE_KIND=real_name" | tee -a verify.txt
+          test -f asar_out/xlsx.full.min.js && echo "SHEETJS=ok" | tee -a verify.txt || { echo "SHEETJS=missing" | tee -a verify.txt; exit 1; }
+          grep -q 'tables-grid' asar_out/hotel-pricing-dashboard.html && echo "ARRIVALS_TABLE=ok" | tee -a verify.txt || { echo "ARRIVALS_TABLE=missing" | tee -a verify.txt; exit 1; }
           ls -l dist/*.exe | tee -a verify.txt
           sha256sum dist/*.exe | tee -a verify.txt
       - name: Upload installer
